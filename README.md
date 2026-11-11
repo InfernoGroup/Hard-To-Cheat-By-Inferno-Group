@@ -1,3 +1,3 @@
-# Frontier Anti-Cheat Indonesia
+# Frontier Anti-Cheat Indonesia — HTC
 
-HTC — Hard-To-Cheat. Bagian dari Inferno Group.
+Hard-To-Cheat (HTC) adalah bagian dari Inferno Group, dengan misi mendukung pengalaman bermain yang lebih adil untuk komunitas Roblox Indonesia.
