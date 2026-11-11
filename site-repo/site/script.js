@@ -122,3 +122,66 @@ if (hero && !prefersReducedMotion && window.matchMedia('(pointer: fine)').matche
     artwork.style.removeProperty('--pointer-y');
   });
 }
+
+const htcLogo = document.querySelector('[data-htc-logo]');
+if (htcLogo) {
+  let rotationX = -7;
+  let rotationY = -14;
+  let dragOrigin = null;
+
+  const setRotation = (x, y) => {
+    htcLogo.style.setProperty('--logo-x', `${x.toFixed(1)}deg`);
+    htcLogo.style.setProperty('--logo-y', `${y.toFixed(1)}deg`);
+  };
+
+  htcLogo.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    dragOrigin = { x: event.clientX, y: event.clientY, rotationX, rotationY, pointerId: event.pointerId };
+    htcLogo.classList.add('is-dragging');
+    htcLogo.setPointerCapture(event.pointerId);
+  });
+
+  htcLogo.addEventListener('pointermove', (event) => {
+    const bounds = htcLogo.getBoundingClientRect();
+    const localX = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const localY = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    htcLogo.style.setProperty('--shine-x', `${(localX * 100).toFixed(1)}%`);
+    htcLogo.style.setProperty('--shine-y', `${(localY * 100).toFixed(1)}%`);
+
+    if (dragOrigin && event.pointerId === dragOrigin.pointerId) {
+      rotationY = dragOrigin.rotationY + (event.clientX - dragOrigin.x) * 0.9;
+      rotationX = dragOrigin.rotationX - (event.clientY - dragOrigin.y) * 0.75;
+      setRotation(rotationX, rotationY);
+      return;
+    }
+
+    if (prefersReducedMotion || event.pointerType === 'touch') return;
+    const tiltX = rotationX - (localY - 0.5) * 16;
+    const tiltY = rotationY + (localX - 0.5) * 22;
+    setRotation(tiltX, tiltY);
+  });
+
+  const finishRotation = (event) => {
+    if (!dragOrigin || event.pointerId !== dragOrigin.pointerId) return;
+    dragOrigin = null;
+    htcLogo.classList.remove('is-dragging');
+  };
+  htcLogo.addEventListener('pointerup', finishRotation);
+  htcLogo.addEventListener('pointercancel', finishRotation);
+  htcLogo.addEventListener('lostpointercapture', finishRotation);
+  htcLogo.addEventListener('pointerleave', () => {
+    if (!dragOrigin) setRotation(rotationX, rotationY);
+  });
+
+  htcLogo.addEventListener('keydown', (event) => {
+    const step = event.shiftKey ? 30 : 12;
+    if (event.key === 'ArrowLeft') rotationY -= step;
+    else if (event.key === 'ArrowRight') rotationY += step;
+    else if (event.key === 'ArrowUp') rotationX -= step;
+    else if (event.key === 'ArrowDown') rotationX += step;
+    else if (event.key === 'Home') { rotationX = -7; rotationY = -14; }
+    else return;
+    event.preventDefault();
+    setRotation(rotationX, rotationY);
+  });
+}
