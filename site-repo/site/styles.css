@@ -331,7 +331,10 @@ html.page-entered body::before { transform: scaleY(0); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-  .motion-ready [data-reveal] { opacity: 1; transform: none; }
+  html { scroll-behavior: smooth !important; }
+  .motion-ready [data-reveal] { opacity: 0; transform: none !important; clip-path: none; transition-property: opacity !important; transition-duration: .72s !important; transition-timing-function: ease !important; }
+  .motion-ready [data-reveal].is-visible { opacity: 1; transform: none !important; }
+  .motion-ready .hero h1[data-reveal] { clip-path: none; }
   html.motion-ready body::before { display: none; }
   [data-ripple] > .tap-ripple { display: none; }
   .htc-logo { animation: none !important; }

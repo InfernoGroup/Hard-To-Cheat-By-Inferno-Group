@@ -9,7 +9,7 @@ const rippleTargets = document.querySelectorAll('[data-ripple]');
 
 if (year) year.textContent = new Date().getFullYear();
 
-if ('IntersectionObserver' in window && !prefersReducedMotion) {
+if ('IntersectionObserver' in window) {
   document.documentElement.classList.add('motion-ready');
   requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('page-entered')));
   const revealObserver = new IntersectionObserver((entries, observer) => {
