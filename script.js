@@ -156,8 +156,8 @@ if (htcLogo) {
     }
 
     if (prefersReducedMotion || event.pointerType === 'touch') return;
-    const tiltX = rotationX - (localY - 0.5) * 16;
-    const tiltY = rotationY + (localX - 0.5) * 22;
+    const tiltX = rotationX - (localY - 0.5) * 32;
+    const tiltY = rotationY + (localX - 0.5) * 44;
     setRotation(tiltX, tiltY);
   });
 
