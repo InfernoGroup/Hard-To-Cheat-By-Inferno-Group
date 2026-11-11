@@ -4,11 +4,14 @@ const progress = document.querySelector('#scroll-progress');
 const menuToggle = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#primary-nav');
 const year = document.querySelector('#year');
+const parallaxItems = [...document.querySelectorAll('[data-parallax]')];
+const rippleTargets = document.querySelectorAll('[data-ripple]');
 
 if (year) year.textContent = new Date().getFullYear();
 
 if ('IntersectionObserver' in window && !prefersReducedMotion) {
   document.documentElement.classList.add('motion-ready');
+  requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('page-entered')));
   const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -21,15 +24,42 @@ if ('IntersectionObserver' in window && !prefersReducedMotion) {
 
 let scrollFrame = 0;
 const updateScrollProgress = () => {
-  if (!progress || scrollFrame) return;
+  if (scrollFrame) return;
   scrollFrame = window.requestAnimationFrame(() => {
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    progress.style.width = `${scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0}%`;
+    if (progress) progress.style.width = `${scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0}%`;
+    if (!prefersReducedMotion) {
+      parallaxItems.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const strength = Number(item.dataset.parallax) || 0.1;
+        const distance = (window.innerHeight / 2 - (rect.top + rect.height / 2)) * strength;
+        const boundedDistance = Math.max(-42, Math.min(42, distance));
+        item.style.setProperty('--parallax-y', `${boundedDistance.toFixed(1)}px`);
+      });
+    }
     scrollFrame = 0;
   });
 };
 window.addEventListener('scroll', updateScrollProgress, { passive: true });
+window.addEventListener('resize', updateScrollProgress, { passive: true });
 updateScrollProgress();
+
+rippleTargets.forEach((target) => {
+  target.addEventListener('pointerdown', (event) => {
+    if (prefersReducedMotion || event.button > 0) return;
+    const bounds = target.getBoundingClientRect();
+    const diameter = Math.max(bounds.width, bounds.height) * 1.8;
+    const ripple = document.createElement('span');
+    ripple.className = 'tap-ripple';
+    ripple.setAttribute('aria-hidden', 'true');
+    ripple.style.width = `${diameter}px`;
+    ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${event.clientX - bounds.left}px`;
+    ripple.style.top = `${event.clientY - bounds.top}px`;
+    target.append(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+  });
+});
 
 if (menuToggle && navigation) {
   menuToggle.addEventListener('click', () => {
@@ -84,7 +114,11 @@ if (hero && !prefersReducedMotion && window.matchMedia('(pointer: fine)').matche
     const rect = hero.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    artwork.style.transform = `translate3d(${x * -8}px, ${y * -5}px, 0)`;
+    artwork.style.setProperty('--pointer-x', `${(x * -8).toFixed(1)}px`);
+    artwork.style.setProperty('--pointer-y', `${(y * -5).toFixed(1)}px`);
   });
-  hero.addEventListener('pointerleave', () => { artwork.style.transform = ''; });
+  hero.addEventListener('pointerleave', () => {
+    artwork.style.removeProperty('--pointer-x');
+    artwork.style.removeProperty('--pointer-y');
+  });
 }
