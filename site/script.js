@@ -107,6 +107,81 @@ if (menuToggle && navigation) {
   }
 }
 
+const inPageLinks = [...document.querySelectorAll('a[href^="#"]:not(.skip-link)')];
+let activeSectionArrival = null;
+let sectionArrivalFrame = 0;
+let sectionArrivalTimer = 0;
+
+const clearSectionArrival = () => {
+  if (sectionArrivalFrame) cancelAnimationFrame(sectionArrivalFrame);
+  if (sectionArrivalTimer) window.clearTimeout(sectionArrivalTimer);
+  if (!activeSectionArrival) return;
+  activeSectionArrival.target.classList.remove('section-arriving', 'section-arrived');
+  activeSectionArrival.items.forEach((item) => {
+    item.classList.add('is-visible');
+    item.style.removeProperty('--section-arrival-delay');
+  });
+  activeSectionArrival = null;
+};
+
+const navigateToSection = (target) => {
+  clearSectionArrival();
+  const items = [...target.querySelectorAll('[data-reveal]')];
+  target.classList.add('section-arriving');
+  items.forEach((item, index) => {
+    item.classList.remove('is-visible');
+    item.style.setProperty('--section-arrival-delay', `${Math.min(index * 70, 350)}ms`);
+  });
+  activeSectionArrival = { target, items };
+  void target.offsetHeight;
+
+  const finishArrival = () => {
+    target.classList.add('section-arrived');
+    items.forEach((item) => item.classList.add('is-visible'));
+    sectionArrivalTimer = window.setTimeout(() => {
+      target.classList.remove('section-arriving', 'section-arrived');
+      items.forEach((item) => item.style.removeProperty('--section-arrival-delay'));
+      activeSectionArrival = null;
+      sectionArrivalTimer = 0;
+    }, 1200);
+  };
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const startedAt = performance.now();
+  let previousScrollY = window.scrollY;
+  let stableFrames = 0;
+  const waitForScroll = (now) => {
+    const currentScrollY = window.scrollY;
+    stableFrames = Math.abs(currentScrollY - previousScrollY) < 0.5 ? stableFrames + 1 : 0;
+    previousScrollY = currentScrollY;
+    if ((now - startedAt > 220 && stableFrames >= 5) || now - startedAt > 2800) {
+      sectionArrivalFrame = 0;
+      finishArrival();
+      return;
+    }
+    sectionArrivalFrame = requestAnimationFrame(waitForScroll);
+  };
+  sectionArrivalFrame = requestAnimationFrame(waitForScroll);
+};
+
+inPageLinks.forEach((link) => {
+  link.addEventListener('click', (event) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const hash = new URL(link.href, window.location.href).hash;
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (!target) return;
+    event.preventDefault();
+    if (window.location.hash !== hash) window.history.pushState({ section: hash }, '', hash);
+    navigateToSection(target);
+  });
+});
+
+window.addEventListener('popstate', () => {
+  const hash = window.location.hash || '#top';
+  const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+  if (target) navigateToSection(target);
+});
+
 const hero = document.querySelector('.hero');
 if (hero && !prefersReducedMotion && window.matchMedia('(pointer: fine)').matches) {
   const artwork = hero.querySelector('.hero__art');

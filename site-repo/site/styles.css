@@ -205,6 +205,10 @@ html.page-entered body::before { transform: scaleY(0); }
 .motion-ready .voices__grid .community-message:nth-child(even) { transform: translate3d(36px,10px,0) scale(.985); }
 .motion-ready .voices__grid .community-message.is-visible { transform: translate3d(0,0,0) scale(1); }
 .motion-ready .voices__grid .community-message.is-visible:hover { transform: translate3d(5px,0,0) scale(1.005); }
+.motion-ready .section-arriving { opacity: .18; transform: translate3d(0,24px,0); transition: opacity .62s ease, transform .82s cubic-bezier(.16,1,.3,1); }
+.motion-ready .section-arriving.section-arrived { opacity: 1; transform: translate3d(0,0,0); }
+.motion-ready .section-arriving [data-reveal] { opacity: 0 !important; transform: translate3d(0,28px,0) scale(.99) !important; transition: opacity .7s ease var(--section-arrival-delay,0ms), transform .78s cubic-bezier(.16,1,.3,1) var(--section-arrival-delay,0ms) !important; }
+.motion-ready .section-arriving.section-arrived [data-reveal] { opacity: 1 !important; transform: translate3d(0,0,0) scale(1) !important; }
 
 [data-ripple] { position: relative; isolation: isolate; overflow: hidden; transition: transform .22s cubic-bezier(.2,.7,.2,1); }
 [data-ripple] > .tap-ripple { position: absolute; z-index: 0; border-radius: 50%; background: radial-gradient(circle, rgba(225,34,50,.4), rgba(225,34,50,.12) 48%, transparent 72%); pointer-events: none; transform: translate(-50%,-50%) scale(.05); animation: tap-ripple .68s cubic-bezier(.2,.7,.2,1) forwards; }
